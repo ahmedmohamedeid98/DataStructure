@@ -3,10 +3,11 @@ using namespace std;
 
 class BST
 {
-    int data;
-    BST *left, *right;
-
     public:
+    int data;
+    BST *left, *right, *parent;
+
+    //public:
 
     // Default Constructor
     BST();
@@ -28,8 +29,17 @@ class BST
         return data;
     }
 
+    // min value
+    BST* minValue(BST *);
+
+    // max value
+    BST* maxValue(BST *);
+
     // Delete Element
-    void delete(BST *, int key);
+    void delete_node(BST *, int);
+
+    // inorder successor
+    BST * inorder_successor(BST*, BST*);
 };
 
 /*
@@ -43,13 +53,13 @@ Returned_Data_type  Class_name :: Function_name (function parameter){
 */
 
 // Default constructor definition
-BST :: BST() : data(0), left(NULL), right(NULL) {}
+BST :: BST() : data(0), left(NULL), right(NULL), parent(NULL) {}
 
 // Parameterized constructor definition
 BST :: BST(int value)
 {
     data = value;
-    left = right = NULL;
+    left = right = parent = NULL;
 }
 
 BST* BST :: insert(BST * root, int value)
@@ -61,20 +71,42 @@ BST* BST :: insert(BST * root, int value)
     }
 
     //Insert data
+    BST * temp;
     if(value > root->data)
     {
         // Insert right node data if the value 
         // to be inserted greater than the root data.
-        root-> right = insert(root->right, value);
+        temp = insert(root->right, value);
+        root-> right = temp;
+        temp->parent = root;
+
     }
     else
     {
         // Insert left node data if the value
         // to be inserted lesser than the root data
-        root->left = insert(root->left, value);
+        temp = insert(root->left, value);
+        root->left = temp;
+        temp->parent = root;
     }
 
     // Return root node after insetion
+    return root;
+}
+
+// Minimum value
+BST* BST :: minValue(BST * root){
+    while(root->left != NULL){
+        root = root->left;
+    }
+    return root;
+} 
+
+//Maximum value
+BST* BST :: maxValue(BST * root){
+    while(root->right != NULL){
+        root = root->right;
+    }
     return root;
 }
 
@@ -106,7 +138,7 @@ BST* BST :: search(BST * root, int key)
     return search(root->left, key);
 }
 
-void BST :: delete(BST * root, int key)
+void BST :: delete_node(BST * root, int key)
 {
     // In Deleting we have three cases
     // 1. Node to be deleted is leaf: Simply remove from the tree.
@@ -116,17 +148,33 @@ void BST :: delete(BST * root, int key)
     // The important thing to note is, inorder successor is needed only when right child is not empty.
     // In this particular case, inorder successor can be obtained by 
     // finding the minimum value in right child of the node.
-    return NULL;
+    //return NULL;
     
+}
+
+BST* BST :: inorder_successor(BST * root, BST * n){
+    // step1: if the right node is not null then go to the right and return minValue 
+    if(n->right != NULL){
+        return minValue(n->right);
+    }
+
+    // step2: if the right node is null, the successor is on of the insector
+    // traval up using the parent pointer and return the node which is the left child of it's parent
+    BST * p = n->parent;
+    while(p != NULL && n == p->right){
+        n = p;
+        p = p->parent;
+    }
+    return p;
 }
 
 int main()
 {
     // init
     BST b, *root = NULL;
-    root = b.insert(root, 50);
+    root = b.insert(root, 20);
 
-    int arr[] = {30,20,40,70,60,80};
+    int arr[] = {8,4,12,10,14,22};
     int arr_size = sizeof(arr) / sizeof(arr[0]);
     // insert in the tree
     for(int i = 0; i < arr_size; i++)
@@ -135,12 +183,20 @@ int main()
     b.inorder(root);
 
     // search in the tree
-    BST * s = b.search(root, 40);
+    /*BST * s = b.search(root, 40);
     if(s != NULL)
     {
         cout << "element found: " << s->getdata() << '\n';
     }else{
         cout << "element ( "<<40<<" ) not found!\n"; 
     }
-    return 0;
+    return 0;*/
+
+    //BST * g = b.maxValue(root);
+    BST * temp = root->left->right->right;
+    cout << "max : " << (b.maxValue(root))->getdata() << '\n';
+    cout << "min : " << (b.minValue(root))->getdata() << '\n';
+
+    cout << "inorder_successor of " << temp->getdata() << " is: " << (b.inorder_successor(root, temp))->getdata() << '\n';
+    
 }
